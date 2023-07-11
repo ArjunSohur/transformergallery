@@ -76,4 +76,3 @@ class SelfAttentionHead(nn.Module):
         attention = scaled_dot_product_attention(weighted_query, weighted_key, weighted_value)
 
         return attention
-
