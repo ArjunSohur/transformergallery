@@ -35,3 +35,4 @@ class MultiHeadAttention(nn.Module):
         processed_multi_head_result = self.feed_forward_layer(multi_head_result)
 
         return processed_multi_head_result
+
