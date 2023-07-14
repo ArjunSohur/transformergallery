@@ -1,6 +1,8 @@
 # Transformer Gallery
 
-Implementation of transformer papers from scratch without any specific prebuilt functions.
+Welcome to the Transformer Gallery!
+
+Here, you will find implementations of transformer papers from scratch without any specific prebuilt functions.
 
 The purpose of this repository is to understand and benchmark different transformer variants on long sequence benchmarks.
 
