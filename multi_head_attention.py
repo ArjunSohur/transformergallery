@@ -23,16 +23,9 @@ class MultiHeadAttention(nn.Module):
                                                       values_hidden_dimension)
                                     for _ in range(number_of_heads)])
 
-        # feed forward layer to deal with the huge concatenation matrix
-        self.feed_forward_layer = nn.Linear(number_of_heads * values_hidden_dimension, embedding_dimension)
-
     # forward call
     def forward(self, query: Tensor, key: Tensor, value: Tensor):
-        # We basically just concatenate all the results of each head ...
+        # We basically just concatenate all the results of each head
         multi_head_result = torch.cat([head(query, key, value) for head in self.heads], dim=-1)
 
-        # ... then pass it through a feed forward neural network to clean it up
-        processed_multi_head_result = self.feed_forward_layer(multi_head_result)
-
-        return processed_multi_head_result
-
+        return multi_head_result
