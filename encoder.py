@@ -24,10 +24,11 @@ def add_and_norm(old_tensor: Tensor, new_tensor: Tensor):
 
 
 class Encoder(nn.Module):
-    def __init__(self, input_seq_length: int, num_attn_heads: int):
+    def __init__(self, input_seq_length: int, num_attn_heads: int, embedding_dimension: int, queries_keys_hidden_dimension: int,
+                 values_hidden_dimension: int):
         super(Encoder, self).__init__()
         self.fc = nn.Linear(input_seq_length*num_attn_heads, num_attn_heads)
 
-        self.mh_attn = MultiHeadAttention(self, num_attn_heads: int, embedding_dimension: int, queries_keys_hidden_dimension: int,
-                 values_hidden_dimension: int)
+        self.mh_attn = MultiHeadAttention(self, num_attn_heads, embedding_dimension, queries_keys_hidden_dimension,
+                 values_hidden_dimension)
 
