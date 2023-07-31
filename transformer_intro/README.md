@@ -63,16 +63,39 @@ To understand the encoder - and decoder, for that matter, - you must understand 
 
 The good news is that once you understand multihead attention, the encoder starts to feel less daunting.
 
-After doing positional encoding, we get an input that is of shape $\mathbb{R}^{n \times d}$, where $n$ is the input sequence length, and $d$ is the hidden encoding dimension.  A copy of this input matrix is stored while the input matrix itself goes through multi-head attention.  Once the input matrix has been properly processed through multi-head attention (with each head of shape $\mathbb{R}^{n \times d}$), we take the copy of the input matrix and add it to each head of the multi-head attention.  Then, we normalize each matrix.  We perform the "add & norm" step to aid gradient descent in backpropagation.
+After doing positional encoding, we get an input that is of shape $\mathbb{R}^{n \times d}$, where $n$ is the input sequence length, and $d$ is the hidden encoding dimension.  A copy of this input matrix is stored while the input matrix itself goes through multi-head attention.  After we've completed multi-head attention, we add the copy of the input to the attentin output.  This steps battles against gradient vanishing or exploding and unpredictable, jagged gradient descent.
 
 The last step of an encoder block is to clean up the input of the normalized and stabilized multi-head attention output.  We clean up by sending the multiple matrices through a fully-connected neural network that compares the outputs of each attention head and spits out one matrix of shape $\mathbb{R}^{n \times d}$, which can then functions as the input to the next layer of encoder.
 
 Encoders, like classic neural networks, are usually stacked on one another for maximum learning.
 
-In an encoder-decoder architecture, then, when we've iterated over all encoder blocks [TODO - ADD HERE]
+In an encoder-decoder architecture, then, when we've iterated over all encoder blocks, we pass the results of the encoder, a context vector for each word, to each decoder block.  The context vectors aid the decoder in getting proper knowledge of the input to produce the output.
 
 
 ## Decoder
+
+Whereas the encoder's job is to contextualize the input, a decoder's job is to produce the output.  The decoder simply predicts the next word as many times as it needs to produce an output.  Notably, the decoder is autoregressive, meaning it only is privy to whatever it has previously outputted.
+
+The autoregressive nature of the decoder explains why we perform masked multi-head attention at the beginning of each decoder block; we don't want the decoder trying to create attention relationships with positions and tokens that have yet to be outputted.  To perform masked attention, we take a matrix the size of the input tensor with zeros in the lower triangle and $- \infty$ in the strict upper triangle.
+
+Recall our formula for dot product attention:  $$S = f(Q,K,V) = \text{softmax}(\frac{QK^T}{\sqrt{d_{Q}}})V$$
+Where: $Q \in \mathbb{R}^{n \times d_{Q}}, K \in \mathbb{R}^{n \times d_{K}}, V \in \mathbb{R}^{n \times d_{V}}$
+
+Let's consider a mask as described above: $ M \in \mathbb{R}^{n \times n \text{ s.t. } M \text{'s}$ lower triangle (including the diagonal) is 0, but $M$ 's strict upper triangle is $- \infty$. Then our masked multi-head attention turns out to be:
+$$S = f(Q,K,V) = \text{softmax}(\frac{QK^T + M}{\sqrt{d_{Q}}})V$$
+Then, when run through the softmax, the attention matrix will be such that no token will have any context about its proceeding tokens.  Keep in mind that the decoder's task - next word prediction - means that it will never have any words that it hasn't already produced itself, which is the reason why we mask the attention at the start of the decoder.
+
+Much like after the multi-head attention in the encoder, we add the input and normalize the resulting matrix to help gradient descent.
+
+Next in the decoder, we pass another attention block, but this time, there is no mask. Instead, we use the context vector that the encoder produced to help predict the next output word.  In the transformer's description, we see an arrow from the top of the encoder going to this attention block in the decoder; the arrow represents the aforementioned context vector.  From the encoder's context vector, the decoder derives its keys and values for the attention layer.  Its queries come from the masked attention block.  From there we computer multi-head attention normally, including the add & norm part.
+
+As with the encoder layer, we send the final result of multi-head attention through a feed forward neural network to ready our attention output to be the input to the next layer.
+
+## Conclusion
+Perhaps you need to hear the transformer explained from many sources, but we hope that we've provided a clear idea of the architecture of the transformer.  As a quick refrence, we've provided a marked-up version of the picture at the start of the article:
+
+<img width="394" alt="Screen Shot 2023-07-30 at 10 07 49 PM" src="https://github.com/AIResearchHub/transformergallery/assets/105809809/d7b8d746-e44d-4cf1-baba-ef0592d5abd7">
+
 
 ### Sources
 https://machinelearningmastery.com/the-transformer-model/
